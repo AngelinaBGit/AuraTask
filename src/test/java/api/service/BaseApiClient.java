@@ -4,7 +4,9 @@ import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
 
 public class BaseApiClient {
-    protected static final String BASE_URI = "http://localhost:3000";
+    public static final String BASE_URI = "http://localhost:3000";
+    public static final String LOGIN = "admin@example.com";
+    public static final String PASSWORD = "password";
     protected final Session session;
 
     protected BaseApiClient(Session session) {

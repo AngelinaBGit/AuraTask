@@ -19,11 +19,13 @@ public class PostApi extends BaseApiClient{
     private Response sendPostPayload(String path, Map<String, String> formParams) {
         RequestSpecification request = givenAuth()
                 .basePath(path)
+                .log().all()
                 .contentType("application/x-www-form-urlencoded");
         formParams.forEach(request::formParam);
         return request
                 .post()
                 .then()
+                .log().all()
                 .statusCode(200)
                 .extract()
                 .response();
@@ -54,14 +56,14 @@ public class PostApi extends BaseApiClient{
         return sendPostPayload(CREATE_PATH, convertPostToFormParams(post));
     }
 
-    public Response editPost(Post post) {
+    public void editPost(Post post) {
         if (post.getId() == null) throw new IllegalArgumentException("Post id cannot be null");
         String path = String.format(EDIT_PATH_TEMPLATE, post.getId());
-        return sendPostPayload(path, convertPostToFormParams(post));
+        sendPostPayload(path, convertPostToFormParams(post));
     }
 
     public Response getPostList() {
-        return givenAuth().basePath(LIST_PATH).get().then().statusCode(200).extract().response();
+        return givenAuth().basePath(LIST_PATH).log().all().get().then().log().all().statusCode(200).extract().response();
     }
 }
 

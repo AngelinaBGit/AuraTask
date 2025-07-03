@@ -10,11 +10,8 @@ import java.time.Duration;
 
 public class AdminPage {
     private final WebDriverWait wait;
-
     private final By menuButtonLocator = By.cssSelector("section.sc-dmqHEX.adminjs_Box");
-
     private final By happyFolderLocator = By.xpath("//div[text()='Happy Folder']");
-
     private final By publisherLocator = By.xpath("//div[text()='Publisher']");
     private final By postLocator = By.xpath("//div[text()='Post']");
 

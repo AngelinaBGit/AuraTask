@@ -14,9 +14,7 @@ import java.util.NoSuchElementException;
 
 public class PostPage {
     private final WebDriverWait wait;
-    private WebDriver driver;
-
-
+    private final WebDriver driver;
     private final By createNewButton = By.cssSelector("a[data-testid='action-new']");
     private final By titleInput = By.id("title");
     private final By contentInput = By.id("content");
@@ -27,6 +25,7 @@ public class PostPage {
 
     public PostPage(WebDriver driver) {
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        this.driver = driver;
         PageFactory.initElements(driver, this);
     }
 
@@ -63,36 +62,10 @@ public class PostPage {
         return this;
     }
 
-    public PostPage selectPublisherByEmail(String email) {
+    public void selectPublisherByEmail() {
         WebElement publisherInput = wait.until(ExpectedConditions.visibilityOfElementLocated(publisherSelectInput));
-
         publisherInput.click();
-        publisherInput.sendKeys(email);
-        publisherInput.sendKeys(Keys.ENTER);
-
-//// 1. Найти контейнер селекта (в котором поле ввода)
-//        WebElement publisherSelect = driver.findElement(By.cssSelector("section[data-testid='property-edit-publisher'] div.adminjs_Select"));
-//
-//// 2. Кликнуть, чтобы раскрыть меню
-//        publisherSelect.click();
-//
-//// 3. Найти input, чтобы ввести email (если нужно вводить, иначе можно пропустить)
-//        WebElement input = publisherSelect.findElement(By.cssSelector("input[role='combobox']"));
-//        input.sendKeys(email);  // если нужно фильтровать список
-//
-//// 4. Ждать появления выпадающего меню
-//        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-//        WebElement dropdownMenu = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("div.css-eglc4o-menu")));
-//
-//// 5. Найти элемент с нужным email внутри меню и кликнуть по нему
-//        WebElement option = dropdownMenu.findElements(By.cssSelector("div.css-1wrbua2-option"))
-//                .stream()
-//                .filter(e -> e.getText().equals(email))
-//                .findFirst()
-//                .orElseThrow(() -> new NoSuchElementException("Option with email " + email + " not found"));
-//
-//        option.click();
-        return this;
+        publisherInput.sendKeys(Keys.SPACE);
     }
 
     public void clickSave() {
@@ -100,23 +73,24 @@ public class PostPage {
         wait.until(ExpectedConditions.elementToBeClickable(saveButton)).click();
     }
 
-
     public void createNewPost(String title, String content, String status, String publisherEmail) {
         clickCreateNew()
                 .enterTitle(title)
                 .enterContent(content)
                 .selectStatus(status)
                 .clickPublishedLabel()
-                .selectPublisherByEmail(publisherEmail)
-                .clickSave();
+                .selectPublisherByEmail();
+        fillAdditionalPostFields();
+        clickSave();
     }
-    // Найти и кликнуть по записи с нужным title
+
     public void openPostByTitle(String title) {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("td[data-property-name='title']")));
 
         List<WebElement> titles = driver.findElements(By.cssSelector("td[data-property-name='title'] > section[data-testid='property-list-title']"));
         for (WebElement t : titles) {
-            if (t.getText().equals(title)) {
+            String actualTitle = t.getText().trim();
+            if (actualTitle.equalsIgnoreCase(title.trim())) {
                 t.click();
                 return;
             }
@@ -124,27 +98,23 @@ public class PostPage {
         throw new NoSuchElementException("Post with title '" + title + "' not found");
     }
 
-    // Нажать кнопку Edit
     public void clickEditButton() {
         WebElement editBtn = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("a[data-testid='action-edit']")));
         editBtn.click();
     }
 
-    // Изменить статус на Removed
-    public void changeStatusToRemoved() {
-        // Найти выпадающий список Status
-        WebElement statusDropdown = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("div[aria-haspopup='listbox']")));
+    public void fillAdditionalPostFields() {
+        WebElement addItemButton = wait.until(ExpectedConditions.elementToBeClickable(
+                By.cssSelector("button[data-testid='someJson-add']")));
+        addItemButton.click();
 
-        statusDropdown.click();
+        WebElement numberField = wait.until(ExpectedConditions.elementToBeClickable(
+                By.name("someJson.0.number")));
+        numberField.click();
+        numberField.sendKeys("123");
 
-        // В выпадающем списке выбрать "Removed"
-        // Вариант 1: найти элемент по тексту
-        WebElement removedOption = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[contains(@class,'css-')]//div[text()='Removed']")));
-        removedOption.click();
     }
 
-
-    // Получить статус записи в списке по title
     public String getStatusByTitle(String title) {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("table")));
 
